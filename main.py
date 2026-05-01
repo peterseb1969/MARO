@@ -6,46 +6,58 @@ pygame.init()
 
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("MaRo Gaming - Keyboard Test")
+pygame.display.set_caption("MaRo Gaming - v0.2 Spielfigur")
 
-# A font for drawing text. None = default system font, 72 = size in pixels.
-font = pygame.font.Font(None, 72)
-
-# Clock to limit the frame rate
 clock = pygame.time.Clock()
+FPS = 60
 
-# Background color (R, G, B) and text color
-BG_COLOR = (30, 30, 40)
-TEXT_COLOR = (255, 255, 255)
+# Farben (R, G, B)
+BG_COLOR     = (30, 30, 40)
+PLAYER_COLOR = (220, 60, 60)
 
-# This will hold the name of the last key pressed
-last_key = "Press any key..."
+# --- Spielfigur ---
+PLAYER_WIDTH  = 40
+PLAYER_HEIGHT = 60
+PLAYER_SPEED  = 5   # Pixel pro Frame
 
-# --- Main loop ---
+# Startposition: mittig am unteren Rand
+player = pygame.Rect(
+    (WIDTH - PLAYER_WIDTH) // 2,        # x
+    HEIGHT - PLAYER_HEIGHT - 20,        # y (20 px Abstand vom unteren Rand)
+    PLAYER_WIDTH,
+    PLAYER_HEIGHT,
+)
+
+# --- Hauptschleife ---
 running = True
 while running:
 
-    # 1. Handle events (input, window close, etc.)
+    # 1. Events abarbeiten
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN:
-            # pygame.key.name() turns a key code into a readable string
-            last_key = pygame.key.name(event.key)
-            print(f"Key pressed: {last_key}")
 
-    # 2. Draw everything
-    screen.fill(BG_COLOR)                         # clear screen
-    text_surface = font.render(last_key, True, TEXT_COLOR)
-    text_rect = text_surface.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-    screen.blit(text_surface, text_rect)          # paste text onto screen
+    # 2. Tastatur-Status abfragen (für gedrückt-gehaltene Tasten)
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT]:
+        player.x -= PLAYER_SPEED
+    if keys[pygame.K_RIGHT]:
+        player.x += PLAYER_SPEED
 
-    # 3. Show the new frame
+    # 3. Figur am Fensterrand stoppen
+    if player.left < 0:
+        player.left = 0
+    if player.right > WIDTH:
+        player.right = WIDTH
+
+    # 4. Zeichnen
+    screen.fill(BG_COLOR)
+    pygame.draw.rect(screen, PLAYER_COLOR, player)
+
+    # 5. Frame anzeigen und FPS begrenzen
     pygame.display.flip()
+    clock.tick(FPS)
 
-    # 4. Limit to 60 frames per second
-    clock.tick(60)
-
-# --- Cleanup ---
+# --- Aufräumen ---
 pygame.quit()
 sys.exit()
